@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3 mt-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h2>User purchased ranking</h2>
+        {% for users in template_data.users %}
+            <p>
+                {{users.username}} : {{users.purchase_count}}
+            </p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

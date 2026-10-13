@@ -2,8 +2,10 @@ from django.shortcuts import render
 from .forms import CustomUserCreationForm, CustomErrorList
 from django.shortcuts import redirect
 from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 
 # Create your views here.
 @login_required
@@ -52,3 +54,15 @@ def orders(request):
     template_data['orders'] = request.user.order_set.all()
     return render(request, 'accounts/orders.html',
         {'template_data': template_data})
+
+@user_passes_test(lambda u: u.is_superuser)
+def purchased_ranking(request):
+    users = User.objects.filter(is_superuser=False).annotate(
+        purchase_count=Coalesce(Sum("order__item__quantity"), 0)
+    ).order_by('-purchase_count')
+
+    template_data = {}
+    template_data['title'] = 'Purchase Ranking'
+    template_data['users'] = users
+
+    return render(request, 'accounts/purchase_ranking.html', {'template_data': template_data})
