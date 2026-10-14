@@ -57,12 +57,23 @@ def orders(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def purchased_ranking(request):
+    limit = request.GET.get('limit')
+
+    if limit:
+        limit = int(limit)
+    else:
+        limit = None
+
     users = User.objects.filter(is_superuser=False).annotate(
         purchase_count=Coalesce(Sum("order__item__quantity"), 0)
     ).order_by('-purchase_count')
 
+    if limit is not None:
+        users = users[:limit]
+
     template_data = {}
     template_data['title'] = 'Purchase Ranking'
     template_data['users'] = users
+    template_data['limit'] = limit
 
     return render(request, 'accounts/purchase_ranking.html', {'template_data': template_data})
