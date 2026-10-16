@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Movie, Review
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
-from django.db.models import Count
+from django.db.models import Count,Sum
+from django.db.models.functions import Coalesce
+
 # Create your views here.
 
 def index(request):
@@ -49,6 +51,18 @@ def top_commenters(request):
     return render(
         request,'admin/top_commenter.html',context,
     )
+
+def top_movies(request):
+    # reference - https://www.geeksforgeeks.org/python/aggregate-vs-annotate-in-django/
+    most_purchased = Movie.objects.annotate(total_purchases = Coalesce(Sum('item__quantity'),0)).order_by('-total_purchases').first()
+
+    most_reviewed = Movie.objects.annotate(total_reviews = Count('review')).order_by('-total_reviews').first()
+
+    context = {
+        'most_purchased': most_purchased,
+        'most_reviewed': most_reviewed
+    }
+    return render(request, 'admin/top_movies.html', context)
 
 @login_required
 def create_review(request, id):
