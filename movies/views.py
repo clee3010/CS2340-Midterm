@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Movie, Review
 from django.contrib.auth.decorators import login_required
+from django.contrib import admin
+from django.db.models import Count
 # Create your views here.
 
 def index(request):
@@ -22,6 +24,31 @@ def show(request, id):
     template_data['movie'] = movie
     template_data['reviews'] = reviews
     return render(request, 'movies/show.html', {'template_data': template_data})
+
+def top_commenters(request):
+    comment_counts = (
+        Review.objects
+        .values('user_id', 'user__username')
+        .annotate(comment_count=Count('id'))
+        .order_by('-comment_count','user__username')
+    )
+    highest = comment_counts.first()
+
+    if highest:
+        top_users = comment_counts.filter(
+            comment_count=highest['comment_count']
+        )
+    else:
+        top_users = []
+
+    context = {
+        **admin.site.each_context(request),
+        'title': 'Top Commenter',
+        'top_users': top_users
+    }
+    return render(
+        request,'admin/top_commenter.html',context,
+    )
 
 @login_required
 def create_review(request, id):

@@ -1,0 +1,14 @@
+{% extends "admin/index.html" %}
+
+{%block content %}
+<div class = "module">
+    <h2>Comment Activity</h2>
+    <p>
+        <a href = "{%url 'admin_top_commenters' %}">
+            View Top Commenter
+        </a>
+    </p>
+</div>
+
+{{block.super}}
+{%endblock%}

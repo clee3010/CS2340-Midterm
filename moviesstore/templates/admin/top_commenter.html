@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; Top Commenter
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h2>User(s) with the Most Comments</h2>
+
+    <p>
+        Total comments across all movies.
+        Users tied for the highest count are shown together.
+    </p>
+
+    {% if top_users %}
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Username</th>
+                <th scope="col">Comments Posted</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for commenter in top_users %}
+            <tr>
+                <td>{{ commenter.user__username }}</td>
+                <td>{{ commenter.comment_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No comments have been posted yet.</p>
+    {% endif %}
+</div>
+
+<p>
+    <a href="{% url 'admin:index' %}">
+        Back to Admin Dashboard
+    </a>
+</p>
+{% endblock %}
