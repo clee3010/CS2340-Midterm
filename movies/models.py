@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 class Movie(models.Model):
@@ -21,3 +22,21 @@ class Review(models.Model):
         on_delete=models.CASCADE)
     def __str__(self):
         return str(self.id) + ' - ' + self.movie.name
+
+class Rating(models.Model):
+    id = models.AutoField(primary_key=True)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    stars = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'movie'],
+                name='one_rating_per_user_per_movie'
+            )
+        ]
+    def __str__(self):
+        return str(self.id) + ' - ' + self.user.username + ' rated ' + self.movie.name + ': ' + str(self.stars)

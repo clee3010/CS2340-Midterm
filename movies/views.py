@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review
+from .models import Movie, Review, Rating
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
-from django.db.models import Count
+from django.db.models import Count, Sum, Avg
+from django.db.models.functions import Coalesce
+
 # Create your views here.
 
 def index(request):
@@ -11,19 +13,11 @@ def index(request):
         movies = Movie.objects.filter(name__icontains=search_term)
     else:
         movies = Movie.objects.all()
+    movies = movies.annotate(avg_rating=Avg('rating__stars'))
     template_data = {}
     template_data['title'] = 'Movies'
     template_data['movies'] = movies
     return render(request, 'movies/index.html', {'template_data': template_data})
-
-def show(request, id):
-    movie = Movie.objects.get(id=id)
-    reviews = Review.objects.filter(movie=movie)
-    template_data = {}
-    template_data['title'] = movie.name
-    template_data['movie'] = movie
-    template_data['reviews'] = reviews
-    return render(request, 'movies/show.html', {'template_data': template_data})
 
 def top_commenters(request):
     comment_counts = (
@@ -49,6 +43,18 @@ def top_commenters(request):
     return render(
         request,'admin/top_commenter.html',context,
     )
+
+def top_movies(request):
+    # reference - https://www.geeksforgeeks.org/python/aggregate-vs-annotate-in-django/
+    most_purchased = Movie.objects.annotate(total_purchases = Coalesce(Sum('item__quantity'),0)).order_by('-total_purchases').first()
+
+    most_reviewed = Movie.objects.annotate(total_reviews = Count('review')).order_by('-total_reviews').first()
+
+    context = {
+        'most_purchased': most_purchased,
+        'most_reviewed': most_reviewed
+    }
+    return render(request, 'admin/top_movies.html', context)
 
 @login_required
 def create_review(request, id):
@@ -92,3 +98,46 @@ def report_review(request, id, review_id):
     review = get_object_or_404(Review, id=review_id)
     review.delete()
     return redirect('movies.show', id=id)
+
+@login_required
+def rate_movie(request, id):
+    movie = get_object_or_404(Movie, id=id)
+    if request.method != 'POST':
+        return redirect('movies.show', id=id)
+
+    try:
+        stars = int(request.POST.get('stars'))
+    except (TypeError, ValueError):
+        return redirect('movies.show', id=id)
+
+    if stars < 1 or stars > 5:
+        return redirect('movies.show', id=id)
+
+    Rating.objects.update_or_create(
+        user=request.user,
+        movie=movie,
+        defaults={'stars': stars},
+    )
+
+    return redirect('movies.show', id=id)
+
+def show(request, id):
+    movie = get_object_or_404(Movie, id=id)
+    reviews = Review.objects.filter(movie=movie)
+    rating_stats = Rating.objects.filter(movie=movie).aggregate(
+        average=Avg('stars'),
+        count=Count('id'),
+    )
+
+    user_rating = None
+    if request.user.is_authenticated:
+        user_rating = Rating.objects.filter(movie=movie, user=request.user).first()
+
+    template_data = {}
+    template_data['title'] = movie.name
+    template_data['movie'] = movie
+    template_data['reviews'] = reviews
+    template_data['average_rating'] = rating_stats['average']
+    template_data['rating_count'] = rating_stats['count']
+    template_data['user_rating'] = user_rating
+    return render(request, 'movies/show.html', {'template_data': template_data})
