@@ -9,6 +9,30 @@
         <hr />
         <p><b>Description:</b> {{ template_data.movie.description }}</p>
         <p><b>Price:</b> ${{ template_data.movie.price }}</p>
+        <p><b>Average rating:</b>
+          {% if template_data.average_rating %}
+            {{ template_data.average_rating|floatformat:1 }} / 5
+            ({{ template_data.rating_count }} rating{{ template_data.rating_count|pluralize }})
+          {% else %}
+            No ratings yet
+          {% endif %}
+        </p>
+
+        {% if user.is_authenticated %}
+        <form method="POST" action="{% url 'movies.rate' id=template_data.movie.id %}" class="mb-3">
+          {% csrf_token %}
+          <b>Your rating:</b>
+          {% for i in "12345" %}
+            <label class="me-2">
+              <input type="radio" name="stars" value="{{ i }}" required
+                {% if template_data.user_rating and template_data.user_rating.stars|stringformat:"d" == i %}checked{% endif %}>
+              {{ i }}
+            </label>
+          {% endfor %}
+          <button type="submit" class="btn bg-dark text-white btn-sm">Submit rating</button>
+        </form>
+        {% endif %}
+
         <p class="card-text">
           <form method="post"
             action="{% url 'cart.add' id=template_data.movie.id %}">
