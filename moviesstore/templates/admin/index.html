@@ -2,13 +2,17 @@
 
 {%block content %}
 <div class = "module">
-    <h2>Comment Activity</h2>
+    <h2>View Rankings</h2>
     <p>
         <a href = "{%url 'admin_top_commenters' %}">
             View Top Commenter
         </a>
     </p>
-    <h2>Movie Stats</h2>
+    <p>
+        <a href = "{%url 'accounts.purchase_rankings' %}">
+            View Top Purchasers
+        </a>
+    </p>
     <p>
         <a href = "{%url 'admin_top_movies' %}">
             View Most Purchased and Reviewed Movies
