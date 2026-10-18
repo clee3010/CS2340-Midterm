@@ -58,6 +58,11 @@
         {% else %}
         <p class="text-center text-muted">No purchases yet.</p>
         {% endif %}
+        <div class="text-start mt-3">
+          <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary mb-2">
+            &larr; Back to Admin Dashboard
+          </a>
+        </div>
       </div>
     </div>
   </div>
