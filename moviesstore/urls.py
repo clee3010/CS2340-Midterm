@@ -23,6 +23,7 @@ from movies import views as movie_views
 
 urlpatterns = [
     path('admin/top-commenters/',admin.site.admin_view(movie_views.top_commenters),name='admin_top_commenters',),
+    path('admin/top-movies/', admin.site.admin_view(movie_views.top_movies), name='admin_top_movies'),
     path('admin/', admin.site.urls),
     path('', include('home.urls')),
     path('movies/', include('movies.urls')),
