@@ -1,0 +1,36 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; Top Movies
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h2>Most Purchased Movies</h2>
+    {% if most_purchased %}
+        <p>Movie: {{ most_purchased.name }}</p>
+        <p>Total Purchases: {{ most_purchased.total_purchases }}</p>
+    {% else %}
+        <p>No Movies Found</p>
+    {% endif %}
+</div>
+
+<div class="module">
+    <h2>Most Reviewed Movies</h2>
+    {% if most_reviewed %}
+        <p>Movie: {{ most_reviewed.name }}</p>
+        <p>Total Reviews: {{ most_reviewed.total_reviews }}</p>
+    {% else %}
+        <p>No Movies Found</p>
+    {% endif %}
+</div>
+
+<p>
+    <a href="{% url 'admin:index' %}">
+        Back to Admin Dashboard
+    </a>
+</p>
+{% endblock %}
